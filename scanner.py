@@ -2,14 +2,12 @@
 Read domain list and export data to file
 """
 import requests as r
+from bs4 import BeautifulSoup
 from argparse import ArgumentParser
 from concurrent.futures import ProcessPoolExecutor
 parser = ArgumentParser()
 parser.add_argument('infile', help='File to read url from')
 args = parser.parse_args()
-
-# TODO: tags are in file: make dictionary? position = index of line tag comes from?
-# Read tags and create encoding dict
 
 # TODO: figure out how to convert to integer consistently, or don't. Maybe same as tags
 # Read mimes and create mime dict
@@ -23,8 +21,10 @@ tag_dict = {}
 index = 0
 with open("tagslist.txt", 'r') as f:
     line = f.readline()
-    tag_dict[line] = index
-    index += 1
+    while(line):
+        tag_dict[line.strip()] = index
+        index += 1
+        line = f.readline()
 
 def find_n_replace(tag):
     return tag_dict[tag]
@@ -37,13 +37,13 @@ def analyze_html(text):
         build skeleton vector based on tags from doct
         get links on page
     """
+    print(tag_dict)
     res = []
-    soup = BeautifulSoup(html, "html.parser")
+    soup = BeautifulSoup(text, "html.parser")
     tags = [tag.name for tag in soup.find_all()]
     for i in tags:
         res.append(find_n_replace(i))
-    # TODO
-    pass
+    return res
 
 def analyze_url(url):
     """
@@ -58,7 +58,7 @@ def analyze_url(url):
 
     # Extract Feature Data
     url_entropy = url[1]
-    number of redirects = len(r.history)
+    number_of_redirects = len(r.history)
     mime_type = r.headers.get('Content-Type').split(';')[0]
 
     if 'html' in mime_type:
@@ -80,6 +80,15 @@ def analyze_url(url):
 #        print(f'{url[0]} scanned and added: {result}')
 debug = True
 if __name__ == "__main__":
-    if debug = True:
-        test_html
+    if( debug == True ):
+        """
+        # Test analyze_html
+        test_html = ""
+        with open('testhtml.html', 'r') as f:
+            line = f.readline()
+            while(line):
+                test_html += line
+                line = f.readline()
 
+        print(analyze_html(test_html))
+        """
