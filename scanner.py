@@ -18,6 +18,18 @@ args = parser.parse_args()
 with open(args.infile, 'r') as f:
     domains = [l.strip().split(',') for l in f.readlines()][1::]
 
+
+tag_dict = {}
+index = 0
+with open("tagslist.txt", 'r') as f:
+    line = f.readline()
+    tag_dict[line] = index
+    index += 1
+
+def find_n_replace(tag):
+    return tag_dict[tag]
+
+
 def analyze_html(text):
     """
     Take html body
@@ -25,6 +37,11 @@ def analyze_html(text):
         build skeleton vector based on tags from doct
         get links on page
     """
+    res = []
+    soup = BeautifulSoup(html, "html.parser")
+    tags = [tag.name for tag in soup.find_all()]
+    for i in tags:
+        res.append(find_n_replace(i))
     # TODO
     pass
 
@@ -57,8 +74,12 @@ def analyze_url(url):
 
     return True
 
-with concurrent.futures.ThreadPoolExecutor() as executor:
-    # Make requests to all domains
-    for url, result in zip(domains, executor.map(analyze_url, domains))
-        print(f'{url[0]} scanned and added: {result}')
+#with concurrent.futures.ThreadPoolExecutor() as executor:
+#    # Make requests to all domains
+#    for url, result in zip(domains, executor.map(analyze_url, domains))
+#        print(f'{url[0]} scanned and added: {result}')
+debug = True
+if __name__ == "__main__":
+    if debug = True:
+        test_html
 
