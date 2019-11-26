@@ -49,7 +49,10 @@ with open("tagslist.txt", 'r') as f:
         line = f.readline()
 
 def find_n_replace(tag):
-    return tag_dict[tag]
+    try:
+        return tag_dict[tag]
+    except KeyError:
+        return 999
 
 
 def analyze_html(text):
@@ -89,7 +92,7 @@ def analyze_url(url):
     # Extract Feature Data
     url_entropy = url[1]
     number_of_redirects = len(r.history)
-    mime_type = r.headers.get('Content-Type').split(';')[0]
+    mime_type = r.headers.get('Content-Type').split(';')[0] if r.headers.get('Content-Type') else 'None'
 
     if 'html' in mime_type and r.text:
         vector, num_links, links = analyze_html(r.text)
