@@ -65,7 +65,7 @@ def analyze_html(text):
     for i in tags:
         res.append(find_n_replace(i))
     a = soup.find_all('a')
-    if a: links = [l for l in (a.attrs.get('href') for a in a) if '://' in l]
+    if a: links = [l for l in (h.attrs.get('href') for h in a if h.attrs.get('href')) if '://' in l]
     else: links = []
     return res, len(links), ' '.join(links)
 
