@@ -1,7 +1,7 @@
 """
 Read domain list and export data to file
 """
-import requests
+from requests import get
 from bs4 import BeautifulSoup
 from argparse import ArgumentParser
 from concurrent.futures import ProcessPoolExecutor
@@ -16,9 +16,6 @@ from sqlalchemy.orm import sessionmaker
 parser = ArgumentParser()
 parser.add_argument('infile', help='File to read url from')
 args = parser.parse_args()
-
-# TODO: figure out how to convert to integer consistently, or don't. Maybe same as tags
-# Read mimes and create mime dict
 
 Base = declarative_base()
 
@@ -62,13 +59,15 @@ def analyze_html(text):
         build skeleton vector based on tags from doct
         get links on page
     """
-    print(tag_dict)
     res = []
     soup = BeautifulSoup(text, "html.parser")
     tags = [tag.name for tag in soup.find_all()]
     for i in tags:
         res.append(find_n_replace(i))
-    return res
+    a = soup.find_all('a')
+    if a: links = [l for l in (a.attrs.get('href') for a in a) if '://' in l]
+    else: links = []
+    return res, len(links), ' '.join(links)
 
 def analyze_url(url):
     """
@@ -78,8 +77,11 @@ def analyze_url(url):
     tmp = url[0]
     if "http" not in tmp:
         tmp = "http://" + tmp
-    r = requests.get(url[0])
 
+    try :
+        r = get(f'http://{url[0]}')
+    except:
+        return False
     # If request failed, return False
     if not r.ok:
         return False
@@ -89,24 +91,23 @@ def analyze_url(url):
     number_of_redirects = len(r.history)
     mime_type = r.headers.get('Content-Type').split(';')[0]
 
-    if 'html' in mime_type:
-        vector, links = analyze_html(r.text)
+    if 'html' in mime_type and r.text:
+        vector, num_links, links = analyze_html(r.text)
     else:
-        vector, links = "", ""
-
-    html_skeleton_vector = vector
-    links_on_page = links
+        vector, num_links, links = "None", 0, "None"
     
-    myrecord = Record(redirect_count=number_of_redirects, \
-                html_vector=html_skeleton_vector, \
-                mime_type=mime_type, \
-                url_entropy=url_entropy, \
-                links_on_page=links_on_page)
-    session.add(myrecord)
-    session.commit()
-    return True
+    return f'{number_of_redirects},{vector},{mime_type},{url_entropy},{num_links},{links}\n'
 
-with ThreadPoolExecutor() as executor:
+with ThreadPoolExecutor(max_workers=200) as executor:
     # Make requests to all domains
     for url, result in zip(domains, executor.map(analyze_url, domains)):
-        print(f'{url[0]} scanned and added: {result}')
+        with open('maldata.csv', 'a+') as f:
+            if result: f.write(result)
+#        myrecord = Record(redirect_count=number_of_redirects, \
+#                    html_vector=html_skeleton_vector, \
+#                    mime_type=mime_type, \
+#                    url_entropy=url_entropy, \
+#                    links_on_page=links_on_page)
+#        session.add(myrecord)
+#        session.commit()
+
