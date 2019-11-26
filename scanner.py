@@ -15,6 +15,7 @@ from sqlalchemy.orm import sessionmaker
 
 parser = ArgumentParser()
 parser.add_argument('infile', help='File to read url from')
+parser.add_argument('outfile', help='File to write results to')
 args = parser.parse_args()
 
 Base = declarative_base()
@@ -104,7 +105,7 @@ def analyze_url(url):
 with ThreadPoolExecutor(max_workers=200) as executor:
     # Make requests to all domains
     for url, result in zip(domains, executor.map(analyze_url, domains)):
-        with open('maldata.csv', 'a+') as f:
+        with open(args.outfile, 'a+') as f:
             if result: f.write(result)
 #        myrecord = Record(redirect_count=number_of_redirects, \
 #                    html_vector=html_skeleton_vector, \
