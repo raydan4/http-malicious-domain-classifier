@@ -102,11 +102,18 @@ def analyze_url(url):
     
     return f'{number_of_redirects},{vector},{mime_type},{url_entropy},{num_links},{links}\n'
 
-with ThreadPoolExecutor(max_workers=200) as executor:
+#with ThreadPoolExecutor(max_workers=200) as executor:
     # Make requests to all domains
-    for url, result in zip(domains, executor.map(analyze_url, domains)):
-        with open(args.outfile, 'a+') as f:
-            if result: f.write(result)
+#    for url, result in zip(domains, executor.map(analyze_url, domains)):
+#        with open(args.outfile, 'a+') as f:
+#            if result: f.write(result)
+
+for url in domains:
+    with open(args.outfile, 'a+') as f:
+        data = analyze_url(url)
+        if data: f.write(data)
+        print(f'scanned {url}')
+
 #        myrecord = Record(redirect_count=number_of_redirects, \
 #                    html_vector=html_skeleton_vector, \
 #                    mime_type=mime_type, \
