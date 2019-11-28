@@ -16,6 +16,7 @@ from sqlalchemy.orm import sessionmaker
 parser = ArgumentParser()
 parser.add_argument('infile', help='File to read url from')
 parser.add_argument('outfile', help='File to write results to')
+parser.add_argument('-l', '--line', type=int, default=0, help='Line of infile to start scanning on')
 args = parser.parse_args()
 
 Base = declarative_base()
@@ -90,15 +91,22 @@ def analyze_url(url):
     if not r.ok:
         return False
 
+    # First Checkpoint
+    print('.', end='')
+
     # Extract Feature Data
     url_entropy = url[1]
+    print('.', end='')
     number_of_redirects = len(r.history)
+    print('.', end='')
     mime_type = r.headers.get('Content-Type').split(';')[0] if r.headers.get('Content-Type') else 'None'
+    print('.', end='')
 
     if 'html' in mime_type and r.text:
         vector, num_links, links = analyze_html(r.text)
     else:
         vector, num_links, links = "None", 0, "None"
+    print('.', end='')
     
     return f'{number_of_redirects},{vector},{mime_type},{url_entropy},{num_links},{links}\n'
 
@@ -108,11 +116,14 @@ def analyze_url(url):
 #        with open(args.outfile, 'a+') as f:
 #            if result: f.write(result)
 
-for url in domains:
+for url in domains[args.line:]:
+    print(f'scanning [{url[0]}]', end=': ')
     with open(args.outfile, 'a+') as f:
         data = analyze_url(url)
-        if data: f.write(data)
-        print(f'scanned {url}')
+        if data:
+            f.write(data)
+            print(f'done')
+        else: print('failed')
 
 #        myrecord = Record(redirect_count=number_of_redirects, \
 #                    html_vector=html_skeleton_vector, \
