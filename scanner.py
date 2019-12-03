@@ -5,7 +5,6 @@ from requests import get
 from bs4 import BeautifulSoup
 from argparse import ArgumentParser
 
-
 parser = ArgumentParser()
 parser.add_argument('infile', help='File to read url from')
 parser.add_argument('outfile', help='File to write results to')
@@ -25,6 +24,7 @@ with open("tagslist.txt", 'r') as f:
         tag_dict[line.strip()] = index
         index += 1
         line = f.readline()
+
 
 def find_n_replace(tag):
     try:
@@ -49,6 +49,7 @@ def analyze_html(text):
     if a: links = [l for l in (h.attrs.get('href') for h in a if h.attrs.get('href')) if '://' in l]
     else: links = []
     return ' '.join(res), len(links), ' '.join(links)
+
 
 def analyze_url(url):
     """
@@ -75,7 +76,7 @@ def analyze_url(url):
     print('.', end='')
     number_of_redirects = len(r.history)
     print('.', end='')
-    mime_type = r.headers.get('Content-Type').split(';')[0] if r.headers.get('Content-Type') else 'None'
+    mime_type = r.headers.get('Content-Type').split(';')[0].replace(',', '') if r.headers.get('Content-Type') else 'None'
     print('.', end='')
 
     if 'html' in mime_type and r.text:
