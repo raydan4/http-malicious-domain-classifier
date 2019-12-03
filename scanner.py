@@ -4,14 +4,7 @@ Read domain list and export data to file
 from requests import get
 from bs4 import BeautifulSoup
 from argparse import ArgumentParser
-from concurrent.futures import ProcessPoolExecutor
-from concurrent.futures import ThreadPoolExecutor
 
-
-from sqlalchemy import Column, Integer, String, BLOB, Date, ForeignKey
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 
 parser = ArgumentParser()
 parser.add_argument('infile', help='File to read url from')
