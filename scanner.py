@@ -19,23 +19,6 @@ parser.add_argument('outfile', help='File to write results to')
 parser.add_argument('-l', '--line', type=int, default=0, help='Line of infile to start scanning on')
 args = parser.parse_args()
 
-Base = declarative_base()
-
-engine = create_engine('sqlite:////tmp/tmpdb.sql')
-
-Session = sessionmaker(bind=engine)
-session = Session()
-
-class Record(Base):
-    __tablename__ = 'record'
-
-    id = Column(Integer, primary_key=True)
-    redirect_count = Column(Integer)
-    html_vector = Column(String)
-    mime_type = Column(String)
-    url_entropy = Column(String)
-    links_on_page = Column(String)
-
 # Read domains from file
 with open(args.infile, 'r') as f:
     domains = [l.strip().split(',') for l in f.readlines()][1::]
@@ -52,9 +35,9 @@ with open("tagslist.txt", 'r') as f:
 
 def find_n_replace(tag):
     try:
-        return tag_dict[tag]
+        return str(tag_dict[tag])
     except KeyError:
-        return 999
+        return str(999)
 
 
 def analyze_html(text):
@@ -72,7 +55,7 @@ def analyze_html(text):
     a = soup.find_all('a')
     if a: links = [l for l in (h.attrs.get('href') for h in a if h.attrs.get('href')) if '://' in l]
     else: links = []
-    return res, len(links), ' '.join(links)
+    return ' '.join(res), len(links), ' '.join(links)
 
 def analyze_url(url):
     """
@@ -112,11 +95,6 @@ def analyze_url(url):
     
     return f'{number_of_redirects},{vector},{mime_type},{url_entropy},{num_links},{links}\n'
 
-#with ThreadPoolExecutor(max_workers=200) as executor:
-    # Make requests to all domains
-#    for url, result in zip(domains, executor.map(analyze_url, domains)):
-#        with open(args.outfile, 'a+') as f:
-#            if result: f.write(result)
 
 for url in domains[args.line:]:
     print(f'scanning [{url[0]}]', end=': ')
@@ -126,12 +104,4 @@ for url in domains[args.line:]:
             f.write(data)
             print(f'done')
         else: print('failed')
-
-#        myrecord = Record(redirect_count=number_of_redirects, \
-#                    html_vector=html_skeleton_vector, \
-#                    mime_type=mime_type, \
-#                    url_entropy=url_entropy, \
-#                    links_on_page=links_on_page)
-#        session.add(myrecord)
-#        session.commit()
 
