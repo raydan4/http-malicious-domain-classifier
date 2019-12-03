@@ -106,6 +106,8 @@ def analyze_url(url):
         vector, num_links, links = analyze_html(r.text)
     else:
         vector, num_links, links = "None", 0, "None"
+    if num_links == 0:
+        links = "None"
     print('.', end='')
     
     return f'{number_of_redirects},{vector},{mime_type},{url_entropy},{num_links},{links}\n'
