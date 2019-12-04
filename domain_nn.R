@@ -1,8 +1,5 @@
 library(tidyverse)
 library(neuralnet)
-library(tm)
-library(Matrix)
-library(slam)
 
 # Data Pipelining ---------------------------------------------------------
 
